@@ -6,8 +6,8 @@
 #!system = ios
 
 [Argument]
-屏蔽上传按钮 = switch, "true", tag = 隐藏「上传」入口, desc = 隐藏导航栏中的「上传」入口
-屏蔽选段按钮 = switch, "true", tag = 屏蔽选段按钮, desc = 屏蔽选段按钮
+blockUpload = switch, "true", tag = 隐藏「上传」入口, desc = 隐藏导航栏中的「上传」入口
+blockClip = switch, "true", tag = 屏蔽选段按钮, desc = 屏蔽选段按钮
 blockShorts = switch, "true", tag = 隐藏「Shorts」入口, desc = 隐藏导航栏中的「Shorts」入口
 autoHd = switch, "true", tag = 自动最高画质, desc = 优先使用最高可用画质，并阻止自动降低画质
 blockGames = switch, "true", tag = 隐藏小游戏推荐, desc = 隐藏 YouTube Playables（小游戏）推荐
@@ -17,21 +17,15 @@ blockStore = switch, "true", tag = 隐藏商店和购物板块, desc = 隐藏视
 nativeDownload = switch, "true", tag = 原生下载（实验性）, desc = 实验性原生下载功能；未设置画质时使用 720p，服务器限制可能仍然生效
 
 [Rule]
-# 禁用 QUIC (UDP)，强制走 HTTPS 以确保脚本正常解密处理
 AND,((DOMAIN-SUFFIX,googlevideo.com),(PROTOCOL,UDP)),REJECT
 AND,((DOMAIN,youtubei.googleapis.com),(PROTOCOL,UDP)),REJECT
 
 [Rewrite]
-# 视频流去广告与防降质
 (^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+) 302 $1$2$3
 ^https?:\/\/[\w-]+\.googlevideo\.com\/(?!(dclk_video_ads|videoplayback\?)).+&oad reject-200
-
-# 屏蔽网页与统计广告接口
 ^https?:\/\/(www|s)\.youtube\.com\/api\/stats\/ads reject-200
 ^https?:\/\/(www|s)\.youtube\.com\/(pagead|ptracking) reject-200
 ^https?:\/\/s\.youtube\.com\/api\/stats\/qoe\?adcontext reject-200
-
-# 自动双语字幕重定向
 ^https:\/\/((?:www|m)\.youtube\.com\/api\/timedtext\?)([^#]+)&tlang=([^&#]+)&([^#]*)(#.*)?$ 302 https://$1$2&$4&subtype=Translate$5
 ^https:\/\/((?:www|m)\.youtube\.com\/api\/timedtext\?)([^#]+)&tlang=([^&#]+)(#.*)?$ 302 https://$1$2&subtype=Translate$4
 ^https:\/\/((?:www|m)\.youtube\.com\/api\/timedtext\?)tlang=([^&#]+)&([^#]*)(#.*)?$ 302 https://$1$3&subtype=Translate$4
@@ -40,21 +34,21 @@ AND,((DOMAIN,youtubei.googleapis.com),(PROTOCOL,UDP)),REJECT
 [Script]
 http-request ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/player\/ad_break(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, tag=youtube.single.ad-break
 
-http-response ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/offline\/get_download_action(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-response.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.download, argument=[{"nativeDownload":{nativeDownload}}]
+http-response ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/offline\/get_download_action(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-response.js, requires-body=true, binary-body-mode=true, tag=youtube.single.download, argument="{\"nativeDownload\":{nativeDownload}}"
 
-http-request ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/player(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.download-player, argument=[{"nativeDownload":{nativeDownload}}]
+http-request ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/player(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, tag=youtube.single.download-player, argument="{\"nativeDownload\":{nativeDownload}}"
 
-http-response ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(?:navigation\/resolve_url|browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config)(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-response.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.response, argument=[{"blockUpload":{屏蔽上传按钮},"blockShorts":{blockShorts},"blockGames":{blockGames},"blockVerticalLive":{blockVerticalLive},"jumpAhead":{jumpAhead},"autoHd":{autoHd},"blockStore":{blockStore}}]
+http-response ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(?:navigation\/resolve_url|browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config)(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-response.js, requires-body=true, binary-body-mode=true, tag=youtube.single.response, argument="{\"blockUpload\":{blockUpload},\"blockShorts\":{blockShorts},\"blockGames\":{blockGames},\"blockVerticalLive\":{blockVerticalLive},\"jumpAhead\":{jumpAhead},\"autoHd\":{autoHd},\"blockStore\":{blockStore}}"
 
-http-response ^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-response.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.ump, argument=[{"blockGames":{blockGames},"blockVerticalLive":{blockVerticalLive},"jumpAhead":{jumpAhead},"autoHd":{autoHd},"blockStore":{blockStore}}]
+http-response ^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-response.js, requires-body=true, binary-body-mode=true, tag=youtube.single.ump, argument="{\"blockGames\":{blockGames},\"blockVerticalLive\":{blockVerticalLive},\"jumpAhead\":{jumpAhead},\"autoHd\":{autoHd},\"blockStore\":{blockStore}}"
 
-http-request ^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.init
+http-request ^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback(?:\?.*)?$ script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, tag=youtube.single.init
 
-http-request ^https?:\/\/[\w-]+\.googlevideo\.com\/videoplayback script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.auto-hd, argument=[{"autoHd":{autoHd}}]
+http-request ^https?:\/\/[\w-]+\.googlevideo\.com\/videoplayback script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, tag=youtube.single.auto-hd, argument="{\"autoHd\":{autoHd}}"
 
-http-request ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, max-size=-1, tag=youtube.single.log-event
+http-request ^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/youtube-request.js, requires-body=true, binary-body-mode=true, tag=youtube.single.log-event
 
-http-response ^https:\/\/(?:www|m)\.youtube\.com\/api\/timedtext(?:\?|$) script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/YT-CC-ASR-Auto.js, requires-body=true, max-size=-1, tag=youtube.single.dual-subs
+http-response ^https:\/\/(?:www|m)\.youtube\.com\/api\/timedtext(?:\?|$) script-path=https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/YT-CC-ASR-Auto.js, requires-body=true, tag=youtube.single.dual-subs
 
 [MITM]
 hostname = *.googlevideo.com, -redirector*.googlevideo.com, www.youtube.com, s.youtube.com, youtubei.googleapis.com, m.youtube.com
