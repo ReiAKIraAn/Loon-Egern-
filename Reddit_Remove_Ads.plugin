@@ -1,6 +1,7 @@
 #!name = Reddit 去广告
 #!desc = 移除 Reddit 首页/社区信息流推广及评论区广告（适配 cf.gql-fed.reddit.com）
-#!author = ReiAKlraan
+#!author = ReiAKIraAn
+#!homepage = https://github.com/ReiAKIraAn/Loon-Egern-
 #!icon = https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png
 #!date = 2026-11-14
 
