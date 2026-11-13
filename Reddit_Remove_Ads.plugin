@@ -1,11 +1,15 @@
 #!name = Reddit 去广告
-#!desc = 移除 Reddit 信息流推广及评论区广告（适配 cf.gql-fed.reddit.com）
+#!desc = 移除 Reddit 首页/社区信息流推广及评论区广告（适配 cf.gql-fed.reddit.com）
 #!author = Custom
 #!icon = https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Reddit.png
 #!date = 2026-11-14
 
 [Rewrite]
-response if ${url} ~= /^https?:\/\/([a-z0-9-]+\.)?gql(-fed)?\.reddit\.com\/(?!v2p)/i then response.json.jq("if (type == \"object\") and ((.data | type) == \"object\") then (if (.data.postsInfoByIds | type) == \"array\" then .data.postsInfoByIds |= map(select((type != \"object\") or (.__typename != \"AdPost\" and .__typename != \"PromotedPost\" and .isCreatedFromAdsUi != true and .isCommercialCommunication != true and (.promotedCommunityPost // null) == null and (.adPayload // null) == null and (.callToAction // null) == null and (.adSupplementaryTextRichtext // null) == null))) else . end) | (if ((.data.postInfoById | type) == \"object\") and ((.data.postInfoById.commentForest | type) == \"object\") then (if (.data.postInfoById.commentForest.adEligibility | type) == \"object\" then .data.postInfoById.commentForest.adEligibility.adEligibility = \"INELIGIBLE\" else . end) | (if (.data.postInfoById.commentForest.trees | type) == \"array\" then .data.postInfoById.commentForest.trees |= map(select((type != \"object\") or (.__typename != \"AdComment\" and ((.node | type) != \"object\" or (.__typename != \"AdComment\" and .isCreatedFromAdsUi != true))))) else . end) else . end) else . end")
+# 1. 移除 Accept 中的 multipart/mixed，强制返回标准单包 JSON 供 jq 完整解析
+^https?:\/\/([a-z0-9-]+\.)?gql(-fed)?\.reddit\.com\/(?!v2p) header-replace Accept application/graphql-response+json, application/json
+
+# 2. 全量递归遍历 JSON，移除所有信息流及评论区广告节点
+response if ${url} ~= /^https?:\/\/([a-z0-9-]+\.)?gql(-fed)?\.reddit\.com\/(?!v2p)/i then response.json.jq("def obj_is_ad: (type == \"object\") and (.__typename == \"AdPost\" or .__typename == \"PromotedPost\" or .__typename == \"AdComment\" or .__typename == \"AdCell\" or .__typename == \"FeedAd\" or .__typename == \"DisplayAd\" or .__typename == \"AdElement\" or .isCreatedFromAdsUi == true or .isCommercialCommunication == true or (.promotedCommunityPost // null) != null or (.adPayload // null) != null or (.callToAction // null) != null or (.adSupplementaryTextRichtext // null) != null); def is_ad: obj_is_ad or ((type == \"object\") and ((.node | obj_is_ad) or (.post | obj_is_ad) or (.ad | obj_is_ad) or ((.node | type) == \"object\" and ((.node.post | obj_is_ad) or (.node.ad | obj_is_ad))))); def walk(f): . as $in | if type == \"object\" then reduce keys[] as $k ({}; . + { ($k): ($in[$k] | walk(f)) }) | f elif type == \"array\" then map(walk(f)) | f else f end; walk(if type == \"array\" then map(select(is_ad | not)) elif (type == \"object\") and ((.adEligibility | type) == \"string\") then .adEligibility = \"INELIGIBLE\" else . end)")
 
 [MITM]
 hostname = gql.reddit.com, *.gql.reddit.com, gql-fed.reddit.com, *.gql-fed.reddit.com
