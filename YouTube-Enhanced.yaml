@@ -1,5 +1,5 @@
 name: YouTube 增强
-description: 去除油管 广告 支持后台播放 画中画（已移除双语字幕功能，使用 YouTube 原生 CC 字幕）
+description: 去除油管广告，支持后台播放与画中画，已修复 Mac Safari 网页字幕与官方自动翻译
 author: gholts,Maasea
 homepage: https://github.com/gholts/surge/tree/main/modules
 icon: https://iili.io/KQ67Yxa.png
