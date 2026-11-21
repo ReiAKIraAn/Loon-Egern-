@@ -1,0 +1,300 @@
+name: 美团去广告
+description: 移除美团首页底栏视频/小团 tab、推荐流、个人页交叉推荐、搜索热词、AI 技能、购物车横幅与开屏图，需清缓存或重装生效。
+author: ZenmoFeiShi, Sliverkiss
+homepage: https://github.com/Sliverkiss/egern
+icon: https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/c1/16/65/c1166517-71bb-d29d-d36e-516765f8a537/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-85-220.png/104x104bb.jpg
+# merged from:
+#   ZenmoFeiShi/Qx MT.snippet + MT.js (2026-10-25 / 2026-11-21) — 规则与脚本主体
+#   Sliverkiss/egern modules/meituan-ads.yaml — 增强型 JQ 类型守卫与完整 MITM 补全
+# absorption:
+#   1. TLS 连接前规则层（46 条）：shark 追踪、mquic 探测、HttpDNS 域名与 IP 级直连拦截（含 IPv6 规整与 no_resolve）
+#   2. URL 重写层（2 条）：HttpDNS 正则阻断与 fetch 直连拦截
+#   3. 正文重写层（8 处）：原 MT.js 140 行脚本全量降阶为零脚本、零额外网络请求的高性能 response_jq，严格保留 homepage/mine 保底断言与类型守卫
+#   4. MITM（9 处）：补全 httpdns 全量 HTTPS 域名，确保加密流量拦截不遗漏
+
+rules:
+  # —— 埋点与追踪域名（TLS 前拦截，不进 MITM） ——
+  - domain:
+      match: shark-mt.meituan.com
+      policy: REJECT
+  - domain:
+      match: shark-default.meituan.com
+      policy: REJECT
+  - domain:
+      match: shark-dp.meituan.com
+      policy: REJECT
+  - domain:
+      match: shark-ps.meituan.com
+      policy: REJECT
+  - domain:
+      match: shark-wm.sankuai.com
+      policy: REJECT
+  - domain:
+      match: shark.dianping.com
+      policy: REJECT
+  - domain_wildcard:
+      match: mquic-*.meituan.com
+      policy: REJECT
+  # —— HTTPDNS 域名拦截 ——
+  - domain:
+      match: httpdnsmultiapi.meituan.com
+      policy: REJECT
+  - domain:
+      match: httpdnsmultiapivip.meituan.com
+      policy: REJECT
+  - domain:
+      match: httpdns.meituan.com
+      policy: REJECT
+  - domain:
+      match: httpdnsvip.meituan.com
+      policy: REJECT
+  - domain:
+      match: dnspod.meituan.httpdns.qcloud.com
+      policy: REJECT
+  - domain:
+      match: dnspod.meituan.httpdns.start.qcloud.com
+      policy: REJECT
+  # —— HTTPDNS 服务器 IP 直连拦截 ——
+  - ip_cidr:
+      match: 202.90.108.13/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.110.46/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.108.69/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.110.45/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.108.68/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.110.48/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.108.67/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.110.36/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.108.54/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 202.90.108.55/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 203.76.217.51/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 203.76.217.53/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 203.76.217.241/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 203.76.217.243/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.202.146.30/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.202.146.49/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 101.50.8.64/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.63.160.64/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.63.160.69/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.37.155.77/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.37.155.60/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 111.230.0.200/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 139.9.47.231/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 121.37.4.167/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 119.29.126.219/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 106.55.217.56/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 103.37.152.224/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 119.29.48.215/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr:
+      match: 42.193.128.160/32
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr6:
+      match: '2405:1480:3000:303b::303b/128'
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr6:
+      match: '2405:1480:1000:3::1e/128'
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr6:
+      match: '2405:1480:1000:4::15/128'
+      policy: REJECT
+      no_resolve: true
+  - ip_cidr6:
+      match: '2402:4e00:40:40::2:373/128'
+      policy: REJECT
+      no_resolve: true
+
+url_rewrites:
+  # —— HTTPDNS 请求层拦截兜底 ——
+  - match: '^https?://(httpdns|httpdnsvip|httpdnsmultiapi|httpdnsmultiapivip)\.meituan\.com/'
+    location: http://reject/
+  - match: '^http://103\.37\.155\.60/fetch'
+    location: http://reject/
+
+body_rewrites:
+  # 首页底栏 Tab：校验 homepage 和 mine 保底在场后，移除 video（短视频）与 xiaotuan（小团团）推广 Tab
+  - response_jq:
+      match: '^https?://apimobile\.meituan\.com/aggroup/indexTab'
+      filter: >-
+        if ([.data?.resource?.tabArea[]? | (.tabName? // "")]
+            | index("homepage") != null and index("mine") != null)
+        then .data.resource.tabArea |= map(select((.tabName? // "") | test("^(video|xiaotuan)$") | not))
+        else . end
+
+  # 推荐流（购物车凑单 feed / 个人中心 feed）：清空数据并设置底线与禁投标志
+  - response_jq:
+      match: '^https?://feedguess\.meituan\.com/lycoris/scene/(gwc_feed1_2265|personalcenter_2154)(\?|$)'
+      filter: >-
+        if ((.data? | type) == "array") then
+          .data = []
+          | .bottom = true
+          | .ext = (if (.ext? | type) == "object" then .ext + {forbidByExp: true} else {forbidByExp: true} end)
+        else . end
+
+  # 个人中心：移除“交叉推荐”区块 (mine_cross_recommend)
+  - response_jq:
+      match: '^https?://mt-personalcenter\.meituan\.com/usercenter/display'
+      filter: >-
+        if ((.children? | type) == "array")
+        then .children |= map(select((.name? // "") | test("mine_cross_recommend") | not))
+        else . end
+
+  # 搜索页：清空默认搜索词与热搜推荐词
+  - response_jq:
+      match: '^https?://apimobile\.meituan\.com/group/v1/deal/searchpage/defaultword'
+      filter: >-
+        if ((.searchIntroduceResponse? | type) == "object") then
+          .searchIntroduceResponse |= (
+            (if ([.defaultWordRes?.defaultWordItems[]?] | length) > 0
+             then .defaultWordRes.defaultWordItems = [] else . end)
+            | (if ([.HotWordInfos[]?] | length) > 0
+               then .HotWordInfos = [] else . end)
+          )
+        else . end
+
+  # 搜索页：过滤热词卡片并清空 AI 搜索气泡
+  - response_jq:
+      match: '^https?://apimobile\.meituan\.com/group/v1/deal/searchpage/hotword/city/divide/hotrecommend/'
+      filter: >-
+        if ((.data? | type) == "object") then
+          .data |= (
+            (if ((.segmentsV2? | type) == "array")
+             then .segmentsV2 |= map(
+                    if ((.hotwordSegments? | type) == "array")
+                       and any(.hotwordSegments[]?; ((.pageName? // "")
+                             | test("^(EntranceHotwordsV2Hotwords|EntranceHotwordsV2ContentCard)$")))
+                    then (.hotwordSegments |= map(select((.pageName? // "")
+                             | test("^(EntranceHotwordsV2Hotwords|EntranceHotwordsV2ContentCard)$") | not)))
+                         | (if ((.hotwordSegments | length) > 0) then . else empty end)
+                    else . end)
+             else . end)
+            | (if ((.aiSearchBubble? | type) == "object")
+                  and ([.aiSearchBubble.bubbleTexts[]?] | length) > 0
+               then .aiSearchBubble.bubbleTexts = [] else . end)
+          )
+        else . end
+
+  # AI 提示助手：清空大喇叭气泡技能（字符串化 JSON 安全解析与回写）
+  - response_jq:
+      match: '^https?://assistify\.meituan\.com/assistant/getAppClientHornConfig'
+      filter: >-
+        (.data | try fromjson catch null) as $d
+        | if ($d != null)
+             and (($d.skills? | type) == "object")
+             and (($d.skills | length) > 0)
+          then .data = ($d | .skills = {} | tojson)
+          else . end
+
+  # 购物车：清空顶部横幅推广位 (topBannerArea)
+  - response_jq:
+      match: '^https?://mop\.meituan\.com/mop/entry/shoppingCartEntry'
+      filter: >-
+        (if ([.resourcesMap?.topBannerArea?[]?] | length) > 0 then .resourcesMap.topBannerArea = [] else . end)
+        | (if ([.resource?.topBannerArea?[]?] | length) > 0 then .resource.topBannerArea = [] else . end)
+        | (if ([.data?.resourcesMap?.topBannerArea?[]?] | length) > 0 then .data.resourcesMap.topBannerArea = [] else . end)
+        | (if ([.data?.resource?.topBannerArea?[]?] | length) > 0 then .data.resource.topBannerArea = [] else . end)
+
+  # 开屏启动图：清空启动图片推广位 (startupPicArea)
+  - response_jq:
+      match: '^https?://mop\.meituan\.com/api/entryModule/startupPicture'
+      filter: >-
+        (if ([.resourcesMap?.startupPicArea?[]?] | length) > 0 then .resourcesMap.startupPicArea = [] else . end)
+        | (if ([.resource?.startupPicArea?[]?] | length) > 0 then .resource.startupPicArea = [] else . end)
+        | (if ([.data?.resourcesMap?.startupPicArea?[]?] | length) > 0 then .data.resourcesMap.startupPicArea = [] else . end)
+        | (if ([.data?.resource?.startupPicArea?[]?] | length) > 0 then .data.resource.startupPicArea = [] else . end)
+
+mitm:
+  hostnames:
+    - apimobile.meituan.com
+    - feedguess.meituan.com
+    - mop.meituan.com
+    - mt-personalcenter.meituan.com
+    - assistify.meituan.com
+    - httpdns.meituan.com
+    - httpdnsvip.meituan.com
+    - httpdnsmultiapi.meituan.com
+    - httpdnsmultiapivip.meituan.com
